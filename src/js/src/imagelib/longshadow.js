@@ -62,7 +62,7 @@ imagelib.longshadow.inShade = function(imgData, x, y) {
 };
 
 imagelib.longshadow.shade = function(imgData, x, y) {
-  var n = 48;
+  var n = 32;
   var step = n / (imgData.width + imgData.height);
   var alpha = n - ((x+y) * step);
   //var color = [0, 0, 0, 32];

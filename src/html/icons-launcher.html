@@ -323,17 +323,19 @@
                   tmpCtx.globalAlpha = values['foreColor'].alpha / 100;
                 }
 
-                // render the long shadow
-                var shadowCtx = imagelib.drawing.context(foreSize);
-                imagelib.drawing.copy(shadowCtx, foreCtx, foreSize);
-                imagelib.longshadow.render(shadowCtx, foreSize.w, foreSize.h);
-
-                // draw the long shadow separately from fore to avoid edge artifacts
-                imagelib.drawing[values['crop'] ? 'drawCenterCrop' : 'drawCenterInside']
-                  (tmpCtx2, shadowCtx, targetRect, {
-                    x: 0, y: 0,
-                    w: foreSize.w, h: foreSize.h
-                  });
+                if (true) { // apply long shadow
+                  // Render at the target size for performance reasons.
+                  // Apply it separately from the foreground to avoid
+                  // edge aliasing artifacts.
+                  var tmpCtx4 = imagelib.drawing.context(iconSize);
+                  imagelib.drawing[values['crop'] ? 'drawCenterCrop' : 'drawCenterInside']
+                    (tmpCtx4, copyFrom, targetRect, {
+                      x: 0, y: 0,
+                      w: foreSize.w, h: foreSize.h
+                    });
+                  imagelib.longshadow.render(tmpCtx4, iconSize.w, iconSize.h);
+                  imagelib.drawing.copy(tmpCtx2, tmpCtx4, iconSize);
+                }
 
                 imagelib.drawing[values['crop'] ? 'drawCenterCrop' : 'drawCenterInside']
                   (tmpCtx2, copyFrom, targetRect, {
