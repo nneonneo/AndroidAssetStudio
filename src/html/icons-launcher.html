@@ -319,18 +319,21 @@
                   tmpCtx3.globalCompositeOperation = 'source-atop';
                   tmpCtx3.fillStyle = values['foreColor'].color;
                   tmpCtx3.fillRect(0, 0, foreSize.w, foreSize.h);
-
-                  // JG
-                  imagelib.longshadow.draw(tmpCtx3, foreSize.w, foreSize.h);
-
                   copyFrom = tmpCtx3;
                   tmpCtx.globalAlpha = values['foreColor'].alpha / 100;
                 }
 
-                // JG
-                else {
-                  imagelib.longshadow.draw(foreCtx, foreSize.w, foreSize.h);
-                }
+                // render the long shadow
+                var shadowCtx = imagelib.drawing.context(foreSize);
+                imagelib.drawing.copy(shadowCtx, foreCtx, foreSize);
+                imagelib.longshadow.render(shadowCtx, foreSize.w, foreSize.h);
+
+                // draw the long shadow separately from fore to avoid edge artifacts
+                imagelib.drawing[values['crop'] ? 'drawCenterCrop' : 'drawCenterInside']
+                  (tmpCtx2, shadowCtx, targetRect, {
+                    x: 0, y: 0,
+                    w: foreSize.w, h: foreSize.h
+                  });
 
                 imagelib.drawing[values['crop'] ? 'drawCenterCrop' : 'drawCenterInside']
                   (tmpCtx2, copyFrom, targetRect, {

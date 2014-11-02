@@ -70,15 +70,14 @@ imagelib.longshadow.shade = function(imgData, x, y) {
   return imagelib.longshadow.setColor(imgData, x, y, color);
 };
 
-imagelib.longshadow.draw = function(ctx, w, h) {
+imagelib.longshadow.render = function(ctx, w, h) {
   var imgData = ctx.getImageData(0, 0, w, h);
   for(var y = 0; y < imgData.height; y++) {
     for(var x = 0; x < imgData.width; x++) {
-      var color = imagelib.longshadow.getColor(imgData, x, y);
-      //if (imagelib.longshadow.matchColor(color, textColor)) {
-      if (color[3] != 0) {
-        continue;
-      }
+      //var color = imagelib.longshadow.getColor(imgData, x, y);
+      //if (color[3] != 0) {
+      //  continue;
+      //}
       if (imagelib.longshadow.inShade(imgData, x, y)) {
         imagelib.longshadow.shade(imgData, x, y);
       }
