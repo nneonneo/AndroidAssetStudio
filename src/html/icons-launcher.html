@@ -142,6 +142,8 @@
         'hdpi-none-targetRect': { x:  4, y:  4, w:  64, h:  64 },
         'mdpi-none-targetRect': { x:  3, y:  3, w:  42, h:  42 },
 
+        // TODO: adjust to new keyline shape dimensions
+
          'web-circle-targetRect': { x: 32, y: 32, w: 448, h: 448 },
         'hdpi-circle-targetRect': { x:  4, y:  4, w:  64, h:  64 },
         'mdpi-circle-targetRect': { x:  3, y:  3, w:  42, h:  42 },
@@ -388,7 +390,7 @@
           new studio.forms.ColorField('foreColor', {
             title: 'Color',
             helpText: 'For transparent foregrounds',
-            defaultValue: '#33b5e5',
+            defaultValue: '#E8EAF6',
             alpha: true,
             defaultAlpha: 0
           }),
@@ -409,11 +411,11 @@
               { id: 'vrect', title: 'Vertical Rectangle' },
               { id: 'hrect', title: 'Horizontal Rectangle' }
             ],
-            defaultValue: 'bevel'
+            defaultValue: 'square'
           }),
           new studio.forms.ColorField('backColor', {
             title: 'Background',
-            defaultValue: '#ffffff'
+            defaultValue: '#3F51B5'
           })
           // new studio.forms.EnumField('recenter', {
           //   title: 'Recentering',
