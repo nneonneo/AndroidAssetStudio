@@ -116,7 +116,7 @@
       // Load image resources (stencils)
       var resList = {};
       for (var density in DENSITIES)
-        for (var backgroundShape in {'square':1, 'circle':1})
+        for (var backgroundShape in {'square':1, 'circle':1, 'vrect':1, 'hrect':1})
           for (var type in {'back':1, 'fore1':1, 'mask':1})
             resList[backgroundShape + '-' + density + '-' + type] = (
               'res/launcher-stencil/' + backgroundShape + '/' + density + '/' + type + '.png');
@@ -148,7 +148,15 @@
 
          'web-square-targetRect': { x: 32, y: 32, w: 448, h: 448 },
         'hdpi-square-targetRect': { x:  4, y:  4, w:  64, h:  64 },
-        'mdpi-square-targetRect': { x:  3, y:  3, w:  42, h:  42 }
+        'mdpi-square-targetRect': { x:  3, y:  3, w:  42, h:  42 },
+
+         'web-vrect-targetRect': { x: 32, y: 32, w: 448, h: 448 },
+        'hdpi-vrect-targetRect': { x:  4, y:  4, w:  64, h:  64 },
+        'mdpi-vrect-targetRect': { x:  3, y:  3, w:  42, h:  42 },
+
+         'web-hrect-targetRect': { x: 32, y: 32, w: 448, h: 448 },
+        'hdpi-hrect-targetRect': { x:  4, y:  4, w:  64, h:  64 },
+        'mdpi-hrect-targetRect': { x:  3, y:  3, w:  42, h:  42 }
       };
 
       /**
@@ -397,7 +405,9 @@
               { id: 'none', title: 'None' },
               { id: 'bevel', title: 'Bevel' },
               { id: 'square', title: 'Square' },
-              { id: 'circle', title: 'Circle' }
+              { id: 'circle', title: 'Circle' },
+              { id: 'vrect', title: 'Vertical Rectangle' },
+              { id: 'hrect', title: 'Horizontal Rectangle' }
             ],
             defaultValue: 'bevel'
           }),
