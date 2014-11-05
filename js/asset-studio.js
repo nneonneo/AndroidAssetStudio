@@ -2081,43 +2081,47 @@ imagelib.drawing.clear = function(ctx, size) {
   ctx.clearRect(0, 0, size.w, size.h);
 };
 
-imagelib.drawing.drawCenterInside = function(dstCtx, src, dstRect, srcRect) {
+imagelib.drawing.drawCenterInside = function(dstCtx, src, dstRect, srcRect, elevate) {
   if (srcRect.w / srcRect.h > dstRect.w / dstRect.h) {
     var h = srcRect.h * dstRect.w / srcRect.w;
      imagelib.drawing.drawImageScaled(dstCtx, src,
         srcRect.x, srcRect.y,
         srcRect.w, srcRect.h,
         dstRect.x, dstRect.y + (dstRect.h - h) / 2,
-        dstRect.w, h);
+        dstRect.w, h,
+        elevate);
   } else {
     var w = srcRect.w * dstRect.h / srcRect.h;
      imagelib.drawing.drawImageScaled(dstCtx, src,
         srcRect.x, srcRect.y,
         srcRect.w, srcRect.h,
         dstRect.x + (dstRect.w - w) / 2, dstRect.y,
-        w, dstRect.h);
+        w, dstRect.h,
+        elevate);
   }
 };
 
-imagelib.drawing.drawCenterCrop = function(dstCtx, src, dstRect, srcRect) {
+imagelib.drawing.drawCenterCrop = function(dstCtx, src, dstRect, srcRect, elevate) {
   if (srcRect.w / srcRect.h > dstRect.w / dstRect.h) {
     var w = srcRect.h * dstRect.w / dstRect.h;
     imagelib.drawing.drawImageScaled(dstCtx, src,
         srcRect.x + (srcRect.w - w) / 2, srcRect.y,
         w, srcRect.h,
         dstRect.x, dstRect.y,
-        dstRect.w, dstRect.h);
+        dstRect.w, dstRect.h,
+        elevate);
   } else {
     var h = srcRect.w * dstRect.h / dstRect.w;
     imagelib.drawing.drawImageScaled(dstCtx, src,
         srcRect.x, srcRect.y + (srcRect.h - h) / 2,
         srcRect.w, h,
         dstRect.x, dstRect.y,
-        dstRect.w, dstRect.h);
+        dstRect.w, dstRect.h,
+        elevate);
   }
 };
 
-imagelib.drawing.drawImageScaled = function(dstCtx, src, sx, sy, sw, sh, dx, dy, dw, dh) {
+imagelib.drawing.drawImageScaled = function(dstCtx, src, sx, sy, sw, sh, dx, dy, dw, dh, elevate) {
   if ((dw < sw / 2 && dh < sh / 2) && imagelib.ALLOW_MANUAL_RESCALE) {
     // scaling down by more than 50%, use an averaging algorithm since canvas.drawImage doesn't
     // do a good job by default
@@ -2131,6 +2135,15 @@ imagelib.drawing.drawImageScaled = function(dstCtx, src, sx, sy, sw, sh, dx, dy,
     dh =  Math.ceil(dh);
 
     var tmpCtx = imagelib.drawing.context({ w: sw, h: sh });
+
+    // TODO: better elevation
+    if (elevate) {
+      tmpCtx.shadowColor = '#000';
+      tmpCtx.shadowBlur = 6;
+      tmpCtx.shadowOffsetX = 0;
+      tmpCtx.shadowOffsetY = 2;
+    }
+
     tmpCtx.drawImage(src.canvas || src, -sx, -sy);
     var srcData = tmpCtx.getImageData(0, 0, sw, sh);
 
@@ -2429,7 +2442,7 @@ imagelib.drawing.fx = function(effects, dstCtx, src, size) {
         // tmpCtx.fillRect(0, 0, size.w, size.h);
         // if (effect.translate)
         //   dstCtx.translate(effect.translate.x || 0, effect.translate.y || 0);
-        // 
+        //
         // dstCtx.globalAlpha = Math.max(0, Math.min(1, effect.opacity || 1));
         // imagelib.drawing.copy(dstCtx, tmpCtx, size);
 
@@ -2559,6 +2572,73 @@ imagelib.drawing.fx = function(effects, dstCtx, src, size) {
   dstCtx.restore(); // D1
 };
 
+
+imagelib.effects = {};
+
+imagelib.effects.renderLongShadow = function(ctx, w, h) {
+  var imgData = ctx.getImageData(0, 0, w, h);
+  for(var y = 0; y < imgData.height; y++) {
+    for(var x = 0; x < imgData.width; x++) {
+      if (imagelib.effects.isInShade(imgData, x, y)) {
+        imagelib.effects.castShade(imgData, x, y);
+      }
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+};
+
+imagelib.effects.renderScore = function(ctx, w, h) {
+  var imgData = ctx.getImageData(0, 0, w, h);
+  for(var y = 0; y < imgData.height/2; y++) {
+    for(var x = 0; x < imgData.width; x++) {
+      var color = [0, 0, 0, 24];
+      imagelib.effects.setColor(imgData, x, y, color);
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+};
+
+imagelib.effects.isInShade = function(imgData, x, y) {
+  var data = imgData.data;
+  while (true) {
+    // traverse towards top/left
+    x -= 1;
+    y -= 1;
+    if (x < 0 || y < 0) {
+      // reached edge
+      return false;
+    }
+    if (imagelib.effects.getAlpha(imgData, x, y)) {
+      // alpha value casts shade
+      return true;
+    }
+  }
+};
+
+imagelib.effects.castShade = function(imgData, x, y) {
+  var n = 32;
+  var step = n / (imgData.width + imgData.height);
+  var alpha = n - ((x + y) * step);
+  var color = [0, 0, 0, alpha];
+  //if (imgData.width == 48) console.log('shade alpha = ' + alpha + ' for ' + x + ',' + y);
+  return imagelib.effects.setColor(imgData, x, y, color);
+};
+
+imagelib.effects.setColor = function(imgData, x, y, color) {
+  var index = (y * imgData.width + x) * 4;
+  var data = imgData.data;
+  data[index] = color[0];
+  data[index + 1] = color[1];
+  data[index + 2] = color[2];
+  data[index + 3] = color[3];
+};
+
+imagelib.effects.getAlpha = function(imgData, x, y) {
+  var data = imgData.data;
+  var index = (y * imgData.width + x) * 4 + 3;
+  return data[index];
+};
+
 imagelib.loadImageResources = function(images, callback) {
   var imageResources = {};
 
@@ -2609,62 +2689,6 @@ imagelib.toDataUri = function(img) {
   ctx.drawImage(img, 0, 0);
 
   return canvas.toDataURL();
-};
-
-
-imagelib.longshadow = {};
-
-imagelib.longshadow.render = function(ctx, w, h) {
-  var imgData = ctx.getImageData(0, 0, w, h);
-  for(var y = 0; y < imgData.height; y++) {
-    for(var x = 0; x < imgData.width; x++) {
-      if (imagelib.longshadow.isInShade(imgData, x, y)) {
-        imagelib.longshadow.castShade(imgData, x, y);
-      }
-    }
-  }
-  ctx.putImageData(imgData, 0, 0);
-};
-
-imagelib.longshadow.isInShade = function(imgData, x, y) {
-  var data = imgData.data;
-  while (true) {
-    // traverse towards top/left
-    x -= 1;
-    y -= 1;
-    if (x < 0 || y < 0) {
-      // reached edge
-      return false;
-    }
-    if (imagelib.longshadow.getAlpha(imgData, x, y)) {
-      // alpha value casts shade
-      return true;
-    }
-  }
-};
-
-imagelib.longshadow.castShade = function(imgData, x, y) {
-  var n = 32;
-  var step = n / (imgData.width + imgData.height);
-  var alpha = n - ((x + y) * step);
-  var color = [0, 0, 0, alpha];
-  //if (imgData.width == 48) console.log('shade alpha = ' + alpha + ' for ' + x + ',' + y);
-  return imagelib.longshadow.setColor(imgData, x, y, color);
-};
-
-imagelib.longshadow.setColor = function(imgData, x, y, color) {
-  var index = (y * imgData.width + x) * 4;
-  var data = imgData.data;
-  data[index] = color[0];
-  data[index + 1] = color[1];
-  data[index + 2] = color[2];
-  data[index + 3] = color[3];
-};
-
-imagelib.longshadow.getAlpha = function(imgData, x, y) {
-  var data = imgData.data;
-  var index = (y * imgData.width + x) * 4 + 3;
-  return data[index];
 };
 
 imagelib.util = {};
