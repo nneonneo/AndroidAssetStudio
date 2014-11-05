@@ -16,21 +16,32 @@ limitations under the License.
 
 //#REQUIRE "includes.js"
 
-imagelib.longshadow = {};
+imagelib.effects = {};
 
-imagelib.longshadow.render = function(ctx, w, h) {
+imagelib.effects.renderLongShadow = function(ctx, w, h) {
   var imgData = ctx.getImageData(0, 0, w, h);
   for(var y = 0; y < imgData.height; y++) {
     for(var x = 0; x < imgData.width; x++) {
-      if (imagelib.longshadow.isInShade(imgData, x, y)) {
-        imagelib.longshadow.castShade(imgData, x, y);
+      if (imagelib.effects.isInShade(imgData, x, y)) {
+        imagelib.effects.castShade(imgData, x, y);
       }
     }
   }
   ctx.putImageData(imgData, 0, 0);
 };
 
-imagelib.longshadow.isInShade = function(imgData, x, y) {
+imagelib.effects.renderScore = function(ctx, w, h) {
+  var imgData = ctx.getImageData(0, 0, w, h);
+  for(var y = 0; y < imgData.height/2; y++) {
+    for(var x = 0; x < imgData.width; x++) {
+      var color = [0, 0, 0, 24];
+      imagelib.effects.setColor(imgData, x, y, color);
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+};
+
+imagelib.effects.isInShade = function(imgData, x, y) {
   var data = imgData.data;
   while (true) {
     // traverse towards top/left
@@ -40,23 +51,23 @@ imagelib.longshadow.isInShade = function(imgData, x, y) {
       // reached edge
       return false;
     }
-    if (imagelib.longshadow.getAlpha(imgData, x, y)) {
+    if (imagelib.effects.getAlpha(imgData, x, y)) {
       // alpha value casts shade
       return true;
     }
   }
 };
 
-imagelib.longshadow.castShade = function(imgData, x, y) {
+imagelib.effects.castShade = function(imgData, x, y) {
   var n = 32;
   var step = n / (imgData.width + imgData.height);
   var alpha = n - ((x + y) * step);
   var color = [0, 0, 0, alpha];
   //if (imgData.width == 48) console.log('shade alpha = ' + alpha + ' for ' + x + ',' + y);
-  return imagelib.longshadow.setColor(imgData, x, y, color);
+  return imagelib.effects.setColor(imgData, x, y, color);
 };
 
-imagelib.longshadow.setColor = function(imgData, x, y, color) {
+imagelib.effects.setColor = function(imgData, x, y, color) {
   var index = (y * imgData.width + x) * 4;
   var data = imgData.data;
   data[index] = color[0];
@@ -65,7 +76,7 @@ imagelib.longshadow.setColor = function(imgData, x, y, color) {
   data[index + 3] = color[3];
 };
 
-imagelib.longshadow.getAlpha = function(imgData, x, y) {
+imagelib.effects.getAlpha = function(imgData, x, y) {
   var data = imgData.data;
   var index = (y * imgData.width + x) * 4 + 3;
   return data[index];

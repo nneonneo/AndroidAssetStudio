@@ -34,43 +34,47 @@ imagelib.drawing.clear = function(ctx, size) {
   ctx.clearRect(0, 0, size.w, size.h);
 };
 
-imagelib.drawing.drawCenterInside = function(dstCtx, src, dstRect, srcRect) {
+imagelib.drawing.drawCenterInside = function(dstCtx, src, dstRect, srcRect, elevate) {
   if (srcRect.w / srcRect.h > dstRect.w / dstRect.h) {
     var h = srcRect.h * dstRect.w / srcRect.w;
      imagelib.drawing.drawImageScaled(dstCtx, src,
         srcRect.x, srcRect.y,
         srcRect.w, srcRect.h,
         dstRect.x, dstRect.y + (dstRect.h - h) / 2,
-        dstRect.w, h);
+        dstRect.w, h,
+        elevate);
   } else {
     var w = srcRect.w * dstRect.h / srcRect.h;
      imagelib.drawing.drawImageScaled(dstCtx, src,
         srcRect.x, srcRect.y,
         srcRect.w, srcRect.h,
         dstRect.x + (dstRect.w - w) / 2, dstRect.y,
-        w, dstRect.h);
+        w, dstRect.h,
+        elevate);
   }
 };
 
-imagelib.drawing.drawCenterCrop = function(dstCtx, src, dstRect, srcRect) {
+imagelib.drawing.drawCenterCrop = function(dstCtx, src, dstRect, srcRect, elevate) {
   if (srcRect.w / srcRect.h > dstRect.w / dstRect.h) {
     var w = srcRect.h * dstRect.w / dstRect.h;
     imagelib.drawing.drawImageScaled(dstCtx, src,
         srcRect.x + (srcRect.w - w) / 2, srcRect.y,
         w, srcRect.h,
         dstRect.x, dstRect.y,
-        dstRect.w, dstRect.h);
+        dstRect.w, dstRect.h,
+        elevate);
   } else {
     var h = srcRect.w * dstRect.h / dstRect.w;
     imagelib.drawing.drawImageScaled(dstCtx, src,
         srcRect.x, srcRect.y + (srcRect.h - h) / 2,
         srcRect.w, h,
         dstRect.x, dstRect.y,
-        dstRect.w, dstRect.h);
+        dstRect.w, dstRect.h,
+        elevate);
   }
 };
 
-imagelib.drawing.drawImageScaled = function(dstCtx, src, sx, sy, sw, sh, dx, dy, dw, dh) {
+imagelib.drawing.drawImageScaled = function(dstCtx, src, sx, sy, sw, sh, dx, dy, dw, dh, elevate) {
   if ((dw < sw / 2 && dh < sh / 2) && imagelib.ALLOW_MANUAL_RESCALE) {
     // scaling down by more than 50%, use an averaging algorithm since canvas.drawImage doesn't
     // do a good job by default
@@ -84,6 +88,15 @@ imagelib.drawing.drawImageScaled = function(dstCtx, src, sx, sy, sw, sh, dx, dy,
     dh =  Math.ceil(dh);
 
     var tmpCtx = imagelib.drawing.context({ w: sw, h: sh });
+
+    // TODO: better elevation
+    if (elevate) {
+      tmpCtx.shadowColor = '#000';
+      tmpCtx.shadowBlur = 6;
+      tmpCtx.shadowOffsetX = 0;
+      tmpCtx.shadowOffsetY = 2;
+    }
+
     tmpCtx.drawImage(src.canvas || src, -sx, -sy);
     var srcData = tmpCtx.getImageData(0, 0, sw, sh);
 
@@ -382,7 +395,7 @@ imagelib.drawing.fx = function(effects, dstCtx, src, size) {
         // tmpCtx.fillRect(0, 0, size.w, size.h);
         // if (effect.translate)
         //   dstCtx.translate(effect.translate.x || 0, effect.translate.y || 0);
-        // 
+        //
         // dstCtx.globalAlpha = Math.max(0, Math.min(1, effect.opacity || 1));
         // imagelib.drawing.copy(dstCtx, tmpCtx, size);
 
