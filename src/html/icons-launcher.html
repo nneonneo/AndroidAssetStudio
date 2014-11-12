@@ -116,7 +116,7 @@
       // Load image resources (stencils)
       var resList = {};
       for (var density in DENSITIES)
-        for (var backgroundShape in {'square':1, 'circle':1, 'vrect':1, 'hrect':1})
+        for (var backgroundShape in {'square':1, 'circle':1, 'vrect':1, 'hrect':1, 'square-dogear':1, 'vrect-dogear':1, 'hrect-dogear':1})
           for (var type in {'back':1, 'fore1':1, 'mask':1})
             resList[backgroundShape + '-' + density + '-' + type] = (
               'res/launcher-stencil/' + backgroundShape + '/' + density + '/' + type + '.png');
@@ -156,7 +156,19 @@
 
          'web-hrect-targetRect': { x: 21, y: 85, w: 470, h: 342 },
         'hdpi-hrect-targetRect': { x:  3, y: 12, w:  66, h:  48 },
-        'mdpi-hrect-targetRect': { x:  2, y:  8, w:  44, h:  32 }
+        'mdpi-hrect-targetRect': { x:  2, y:  8, w:  44, h:  32 },
+
+        'web-square-dogear-targetRect': { x: 53, y: 149, w: 406, h: 312 },
+       'hdpi-square-dogear-targetRect': { x:  7, y:  21, w:  57, h:  43 },
+       'mdpi-square-dogear-targetRect': { x:  5, y:  14, w:  38, h:  29 },
+
+        'web-vrect-dogear-targetRect': { x: 85, y: 117, w: 342, h: 374 },
+       'hdpi-vrect-dogear-targetRect': { x: 12, y:  17, w:  48, h:  52 },
+       'mdpi-vrect-dogear-targetRect': { x:  8, y:  11, w:  32, h:  35 },
+
+        'web-hrect-dogear-targetRect': { x: 21, y: 85, w: 374, h: 342 },
+       'hdpi-hrect-dogear-targetRect': { x:  3, y: 12, w:  52, h:  48 },
+       'mdpi-hrect-dogear-targetRect': { x:  2, y:  8, w:  35, h:  32 }
       };
 
       /**
@@ -184,6 +196,11 @@
 
         var continue_ = function(foreCtx) {
           var backgroundShape = values['backgroundShape'];
+          if (values['effects'] == 'dogear' &&
+             (backgroundShape == 'square' || backgroundShape == 'hrect' || backgroundShape == 'vrect')) {
+            backgroundShape = backgroundShape + '-dogear';
+          }
+
           for (var density in DENSITIES) {
             var mult = studio.util.getMultBaseMdpi(density);
             if (density == 'web') {
@@ -428,7 +445,8 @@
             options: [
               { id: 'none', title: 'None' },
               { id: 'shadow', title: 'Long Shadow' },
-              { id: 'score', title: 'Score' }
+              { id: 'score', title: 'Score' },
+              { id: 'dogear', title: 'Dog-Ear' }
             ],
             defaultValue: 'none'
           }),
