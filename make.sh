@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Update flintjs
+flintjs -u -p src/js/
+
 rm -rf _gh-pages/*
 mkdir -p _gh-pages/js
 mkdir -p _gh-pages/lib
